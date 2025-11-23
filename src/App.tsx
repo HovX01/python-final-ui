@@ -1,68 +1,76 @@
-import { ArrowRight, Sparkles } from 'lucide-react'
-
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
+import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { HomePage } from '@/pages/HomePage'
+import { AuthPage } from '@/pages/AuthPage'
+import { AppsPage } from '@/pages/AppsPage'
+import { BillingPage } from '@/pages/BillingPage'
+import { AdminPage } from '@/pages/AdminPage'
+import { ForgotResetPage } from '@/pages/ForgotResetPage'
 import { Button } from '@/components/ui/button'
 
-function App() {
+function AppShell() {
+  const { accessToken, logout, userEmail, loading } = useAuth()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
-      <div className="mx-auto flex max-w-4xl flex-col gap-10 px-6 py-16">
-        <header className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-sky-200 backdrop-blur">
-            <Sparkles className="h-4 w-4" />
-            React + Tailwind CSS
+      <header className="border-b border-white/5 bg-black/20 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+          <Link to="/" className="text-lg font-semibold text-white">
+            Subscription Platform
+          </Link>
+          <nav className="flex flex-wrap items-center gap-3 text-sm text-slate-200">
+            <Link to="/" className="hover:text-white">
+              Dashboard
+            </Link>
+            <Link to="/apps" className="hover:text-white">
+              Apps
+            </Link>
+            <Link to="/billing" className="hover:text-white">
+              Billing
+            </Link>
+            <Link to="/admin" className="hover:text-white">
+              Admin
+            </Link>
+          </nav>
+          <div className="flex items-center gap-3">
+            {loading ? (
+              <span className="text-xs text-slate-400">Checking session...</span>
+            ) : accessToken ? (
+              <>
+                <span className="text-xs text-slate-200">{userEmail}</span>
+                <Button size="sm" variant="outline" onClick={() => logout()}>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button size="sm" asChild>
+                <Link to="/auth">Login</Link>
+              </Button>
+            )}
           </div>
-          <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
-            Fresh TypeScript starter ready for shadcn/ui components.
-          </h1>
-          <p className="max-w-2xl text-lg text-slate-300">
-            Vite, Tailwind, and React are prewired so you can start building UI
-            immediately. Add your components and routes, wire up data, and
-            iterate fast.
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button className="gap-2">
-              Start building
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" asChild>
-              <a href="https://ui.shadcn.com" target="_blank" rel="noreferrer">
-                Browse shadcn/ui
-              </a>
-            </Button>
-          </div>
-        </header>
-
-        <section className="grid gap-6 sm:grid-cols-2">
-          {[
-            {
-              title: 'Type-safe by default',
-              body: 'Strict TypeScript settings are enabled to help catch issues early.',
-            },
-            {
-              title: 'Tailwind ready',
-              body: 'Utility-first styling with a minimal base layer you can extend.',
-            },
-            {
-              title: 'Fast dev server',
-              body: 'Vite gives instant feedback with hot module replacement.',
-            },
-            {
-              title: 'shadcn/ui friendly',
-              body: 'Install components as you need them for a consistent design system.',
-            },
-          ].map((item) => (
-            <article
-              key={item.title}
-              className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-sky-900/20 backdrop-blur"
-            >
-              <h2 className="text-xl font-semibold text-white">{item.title}</h2>
-              <p className="mt-2 text-sm text-slate-300">{item.body}</p>
-            </article>
-          ))}
-        </section>
-      </div>
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/forgot-reset" element={<ForgotResetPage />} />
+          <Route path="/apps" element={<AppsPage />} />
+          <Route path="/billing" element={<BillingPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
     </div>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppShell />
+      </AuthProvider>
+    </BrowserRouter>
+  )
+}
